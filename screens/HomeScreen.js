@@ -4,28 +4,32 @@ import { useCallback, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import CustomTabBar from "../components/CustomTabBar";
 import Header from "../components/Header";
+import { auth } from "../firebaseConfig";
 import { useTheme } from "../ThemeContext";
 
 const HomeScreen = () => {
   const { theme } = useTheme();
   const [items, setItems] = useState([]);
+  const uid = auth.currentUser?.uid;
 
   useFocusEffect(
     useCallback(() => {
       loadItems();
-    }, [])
+    }, [uid])
   );
 
   const loadItems = async () => {
-    const data = await AsyncStorage.getItem("collections");
-    const allItems = data ? JSON.parse(data) : [];
+  if (!uid) return;
 
-    const recentItems = [...allItems]
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 2);
+  const data = await AsyncStorage.getItem(`collections_${uid}`);
+  const allItems = data ? JSON.parse(data) : [];
 
-    setItems(recentItems);
-  };
+  const recentItems = [...allItems]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 2);
+
+  setItems(recentItems);
+};
 
   return (
     <>

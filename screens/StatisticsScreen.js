@@ -3,6 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import CustomTabBar from "../components/CustomTabBar";
+import { auth } from "../firebaseConfig";
 import { useTheme } from "../ThemeContext";
 
 const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -12,16 +13,20 @@ const StatisticsScreen = () => {
 
   const [items, setItems] = useState([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadItems();
-    }, [])
-  );
+  const uid = auth.currentUser?.uid;
 
-  const loadItems = async () => {
-    const data = await AsyncStorage.getItem("collections");
-    setItems(data ? JSON.parse(data) : []);
-  };
+useFocusEffect(
+  useCallback(() => {
+    loadItems();
+  }, [uid])
+);
+
+const loadItems = async () => {
+  if (!uid) return;
+
+  const data = await AsyncStorage.getItem(`collections_${uid}`);
+  setItems(data ? JSON.parse(data) : []);
+};
 
   const totalCount = items.length;
 

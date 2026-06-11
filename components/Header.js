@@ -3,21 +3,29 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Group501 from "../assets/Group-50.svg";
+import { auth } from "../firebaseConfig";
 import { Color, FontFamily, Padding, Width } from "../GlobalStyles";
 
 const Header = () => {
   const [userName, setUserName] = useState("使用者");
+  
+  const uid = auth.currentUser?.uid;
 
-  useFocusEffect(
-    useCallback(() => {
-      const loadName = async () => {
-        const name = await AsyncStorage.getItem("userName");
-        setUserName(name || "使用者");
-      };
+useFocusEffect(
+  useCallback(() => {
+    const loadName = async () => {
+      if (!uid) return;
 
-      loadName();
-    }, [])
-  );
+      const name = await AsyncStorage.getItem(
+        `userName_${uid}`
+      );
+
+      setUserName(name || "使用者");
+    };
+
+    loadName();
+  }, [uid])
+);
 
   return (
     <View style={styles.frameParent}>

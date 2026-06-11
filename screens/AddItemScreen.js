@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import CustomTabBar from "../components/CustomTabBar";
+import { auth } from "../firebaseConfig";
 import { useTheme } from "../ThemeContext";
 
 const categories = [
@@ -91,13 +92,22 @@ const AddItemScreen = () => {
       createdAt: new Date().toISOString(),
     };
 
-    const oldData = await AsyncStorage.getItem("collections");
-    const oldItems = oldData ? JSON.parse(oldData) : [];
+    const uid = auth.currentUser?.uid;
 
-    await AsyncStorage.setItem(
-      "collections",
-      JSON.stringify([newItem, ...oldItems])
-    );
+if (!uid) {
+  Alert.alert("錯誤", "請先登入");
+  return;
+}
+
+const collectionKey = `collections_${uid}`;
+
+const oldData = await AsyncStorage.getItem(collectionKey);
+const oldItems = oldData ? JSON.parse(oldData) : [];
+
+await AsyncStorage.setItem(
+  collectionKey,
+  JSON.stringify([newItem, ...oldItems])
+);
 
     Alert.alert("成功", "已新增收藏");
     navigation.navigate("收藏庫");
@@ -141,6 +151,7 @@ const AddItemScreen = () => {
             style={styles.dropdown}
             textStyle={styles.dropdownText}
             dropDownContainerStyle={styles.dropdownContainer}
+            listMode="SCROLLVIEW"
           />
         </View>
 
@@ -213,7 +224,7 @@ const AddItemScreen = () => {
 
         <View style={styles.buttonRow}>
           <Pressable style={styles.nextButton} onPress={saveItem}>
-            <Text style={styles.nextText}>下一步</Text>
+            <Text style={styles.nextText}>加入</Text>
           </Pressable>
 
           <Pressable

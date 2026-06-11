@@ -155,6 +155,7 @@ const [confirmPassword, setConfirmPassword] = useState("");
             style={styles.genderDropdown}
             dropDownContainerStyle={styles.genderDropdownContainer}
             zIndex={1000}
+            listMode="SCROLLVIEW"
           />
         </View>
 

@@ -17,9 +17,13 @@ import CustomTabBar from "../components/CustomTabBar";
 import { auth } from "../firebaseConfig";
 import { useTheme } from "../ThemeContext";
 
+
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const { darkMode, setDarkMode, theme } = useTheme();
+
+  const uid = auth.currentUser?.uid;
+const userNameKey = `userName_${uid}`;
 
   const [userName, setUserName] = useState("使用者");
   const [editName, setEditName] = useState("");
@@ -29,22 +33,25 @@ const ProfileScreen = () => {
   useFocusEffect(
     useCallback(() => {
       loadUserName();
-    }, [])
+    }, [uid])
   );
 
   const loadUserName = async () => {
-    const name = await AsyncStorage.getItem("userName");
-    setUserName(name || "使用者");
-  };
+  if (!uid) return;
+
+  const name = await AsyncStorage.getItem(userNameKey);
+  setUserName(name || "使用者");
+};
 
   const saveUserName = async () => {
-    if (!editName.trim()) return;
+  if (!editName.trim()) return;
+  if (!uid) return;
 
-    await AsyncStorage.setItem("userName", editName.trim());
-    setUserName(editName.trim());
-    setEditName("");
-    setNameModalVisible(false);
-  };
+  await AsyncStorage.setItem(userNameKey, editName.trim());
+  setUserName(editName.trim());
+  setEditName("");
+  setNameModalVisible(false);
+};
 
   const handleLogout = async () => {
     try {

@@ -15,6 +15,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import CustomTabBar from "../components/CustomTabBar";
+import { auth } from "../firebaseConfig";
 import { useTheme } from "../ThemeContext";
 
 const defaultCategories = [
@@ -43,6 +44,9 @@ const colorSets = [
   const { theme } = useTheme();
   const navigation = useNavigation();
 
+  const uid = auth.currentUser?.uid;
+  const categoryKey = `customCategories_${uid}`;
+
   const [categories, setCategories] = useState(defaultCategories);
   const [modalVisible, setModalVisible] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -50,17 +54,21 @@ const colorSets = [
   useFocusEffect(
     useCallback(() => {
       loadCategories();
-    }, [])
+    }, [uid])
   );
-
+    const uid = auth.currentUser?.uid;
   const loadCategories = async () => {
-    const data = await AsyncStorage.getItem("customCategories");
+  if (!uid) return;
 
-    if (data) {
-      const custom = JSON.parse(data);
-      setCategories([...defaultCategories, ...custom]);
-    }
-  };
+  const data = await AsyncStorage.getItem(categoryKey);
+
+  if (data) {
+    const custom = JSON.parse(data);
+    setCategories([...defaultCategories, ...custom]);
+  } else {
+    setCategories(defaultCategories);
+  }
+};
 
   const addCategory = async () => {
     if (!newCategory.trim()) {
@@ -75,7 +83,7 @@ const colorSets = [
       return;
     }
 
-    const oldData = await AsyncStorage.getItem("customCategories");
+    const oldData = await AsyncStorage.getItem(categoryKey);
     const oldCategories = oldData ? JSON.parse(oldData) : [];
 
     const newItem = {
@@ -85,7 +93,10 @@ const colorSets = [
 
     const updated = [...oldCategories, newItem];
 
-    await AsyncStorage.setItem("customCategories", JSON.stringify(updated));
+    await AsyncStorage.setItem(
+  categoryKey,
+  JSON.stringify(updated)
+);
 
     setCategories([...defaultCategories, ...updated]);
     setNewCategory("");

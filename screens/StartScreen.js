@@ -161,12 +161,10 @@ const styles = StyleSheet.create({
     display: "none",
   },
   text4: {
-    height: 23,
-    width: 81,
-    fontSize:20,
-    color: Color.colorWhite,
-    zIndex: 1,
-  },
+  fontSize: 20,
+  color: Color.colorWhite,
+  textAlign: "center",
+},
   logoContainer: {
   width: "100%",
   alignItems: "center",
