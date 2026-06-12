@@ -56,7 +56,6 @@ const colorSets = [
       loadCategories();
     }, [uid])
   );
-    const uid = auth.currentUser?.uid;
   const loadCategories = async () => {
   if (!uid) return;
 

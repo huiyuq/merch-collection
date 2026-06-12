@@ -9,13 +9,14 @@ import {
     Text,
     View,
 } from "react-native";
-import CustomTabBar from "../components/CustomTabBar";
+import { auth } from "../firebaseConfig";
 import { useTheme } from "../ThemeContext";
 
 const CategoryItemsScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { theme } = useTheme();
+  const uid = auth.currentUser?.uid;
 
   const { category } = route.params;
   const [items, setItems] = useState([]);
@@ -23,11 +24,13 @@ const CategoryItemsScreen = () => {
   useFocusEffect(
     useCallback(() => {
       loadItems();
-    }, [])
+    }, [uid, category])
   );
 
   const loadItems = async () => {
-    const data = await AsyncStorage.getItem("collections");
+    if (!uid) return;
+
+    const data = await AsyncStorage.getItem(`collections_${uid}`);
     const allItems = data ? JSON.parse(data) : [];
 
     const filtered = allItems.filter(
@@ -38,55 +41,51 @@ const CategoryItemsScreen = () => {
   };
 
   return (
-    <>
-      <ScrollView
-        style={[styles.page, { backgroundColor: theme.background }]}
-        contentContainerStyle={styles.content}
-      >
-        <Pressable onPress={() => navigation.goBack()}>
-          <Text style={[styles.back, { color: theme.primary }]}>＜ 返回</Text>
-        </Pressable>
+    <ScrollView
+      style={[styles.page, { backgroundColor: theme.background }]}
+      contentContainerStyle={styles.content}
+    >
+      <Pressable onPress={() => navigation.goBack()}>
+        <Text style={[styles.back, { color: theme.primary }]}>＜ 返回</Text>
+      </Pressable>
 
-        <Text style={[styles.title, { color: theme.text }]}>
-          {category}
+      <Text style={[styles.title, { color: theme.text }]}>
+        {category}
+      </Text>
+
+      <Text style={[styles.count, { color: theme.subText }]}>
+        共 {items.length} 件
+      </Text>
+
+      <View style={styles.grid}>
+        {items.map((item) => (
+          <View
+            key={item.id}
+            style={[styles.card, { backgroundColor: theme.card }]}
+          >
+            <Image source={{ uri: item.image }} style={styles.image} />
+
+            <Text style={[styles.name, { color: theme.text }]}>
+              {item.name}
+            </Text>
+
+            <Text style={[styles.info, { color: theme.subText }]}>
+              {item.year}/{item.month}/{item.day}
+            </Text>
+
+            <Text style={[styles.info, { color: theme.subText }]}>
+              ${item.price}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {items.length === 0 && (
+        <Text style={[styles.emptyText, { color: theme.subText }]}>
+          這個類別目前還沒有收藏
         </Text>
-
-        <Text style={[styles.count, { color: theme.subText }]}>
-          共 {items.length} 件
-        </Text>
-
-        <View style={styles.grid}>
-          {items.map((item) => (
-            <View
-              key={item.id}
-              style={[styles.card, { backgroundColor: theme.card }]}
-            >
-              <Image source={{ uri: item.image }} style={styles.image} />
-
-              <Text style={[styles.name, { color: theme.text }]}>
-                {item.name}
-              </Text>
-
-              <Text style={[styles.info, { color: theme.subText }]}>
-                {item.year}/{item.month}/{item.day}
-              </Text>
-
-              <Text style={[styles.info, { color: theme.subText }]}>
-                ${item.price}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {items.length === 0 && (
-          <Text style={[styles.emptyText, { color: theme.subText }]}>
-            這個類別目前還沒有收藏
-          </Text>
-        )}
-      </ScrollView>
-
-      <CustomTabBar />
-    </>
+      )}
+    </ScrollView>
   );
 };
 
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: 60,
     paddingHorizontal: 24,
-    paddingBottom: 150,
+    paddingBottom: 60,
   },
   back: {
     fontSize: 18,
